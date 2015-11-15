@@ -34,26 +34,27 @@ void matrixMultiply(double** A, double** B, int aHeight, int bWidth, int comm, i
     int bBlockWidth = bz;
     int commBlockWidth = bz;
 
-    for (int ib = 0; ib < aHeightBlocks; ib++) {
+    int ib, jb, kb, i, j, k;
+    for (ib = 0; ib < aHeightBlocks; ib++) {
         if (aLastBlockHeight > 0 && ib == (aHeightBlocks - 1)) {
             aBlockHeight = aLastBlockHeight;
         }
         bBlockWidth = bz;
         commBlockWidth = bz;
-        for (int jb = 0; jb < bWidthBlocks; jb++) {
+        for (jb = 0; jb < bWidthBlocks; jb++) {
             if (bLastBlockWidth > 0 && jb == (bWidthBlocks - 1)) {
                 bBlockWidth = bLastBlockWidth;
             }
             commBlockWidth = bz;
-            for (int kb = 0; kb < commnBlocks; kb++) {
+            for (kb = 0; kb < commnBlocks; kb++) {
                 if (commLastBlockWidth > 0 && kb == (commnBlocks - 1)) {
                     commBlockWidth = commLastBlockWidth;
                 }
 
-                for (int i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
-                    for (int j = jb * bz; j < (jb * bz) + bBlockWidth;
+                for (i = ib * bz; i < (ib * bz) + aBlockHeight; i++) {
+                    for (j = jb * bz; j < (jb * bz) + bBlockWidth;
                          j++) {
-                        for (int k = kb * bz;
+                        for (k = kb * bz;
                              k < (kb * bz) + commBlockWidth; k++) {
                             if (A[i][k] != 0 && B[k][j] != 0) {
                                 C[i][j] += A[i][k] * B[k][j];
@@ -86,8 +87,36 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
     }
 
     int itr;
+    int k;
     for (itr = 0; itr < iterations; ++itr){
+        for (i = 0; i < globalColCount; ++i){
+            for (j = 0; j < targetDimension; ++j){
+                preX[i][j] = (double)rand() / (double)RAND_MAX;
+            }
+        }
 
+        for (k = 0; k < threadCount; ++k){
+            for (i = 0; i < rowCountPerUnit; ++i){
+                for (j = 0; j < globalColCount; ++j){
+                    threadPartialBofZ[k][i][j] = (double)rand() / (double)RAND_MAX;
+                }
+            }
+        }
+
+        for (k = 0; k < threadCount; ++k){
+            for (i = 0; i < rowCountPerUnit; ++i){
+                for (j = 0; j < targetDimension; ++j){
+                    threadPartialOutMM[k][i][j] = (double)0.0;
+                }
+            }
+        }
+
+#pragma omp parallel
+        {
+            const int threadIdx = omp_get_thread_num();
+            matrixMultiply(threadPartialBofZ[threadIdx], preX, rowCountPerUnit, targetDimension, globalColCount, blockSize, threadPartialOutMM[threadIdx]);
+
+        }
     }
 }
 
@@ -97,11 +126,13 @@ int main() {
     const int total_threads = omp_get_max_threads();
     printf("There are %d available threads.\n", total_threads); fflush(stdout);
 
-    /*int num_threads = omp_get_max_threads();*/
+    bcReplica(total_threads, 100, 50000, 100);
+
+    /*int num_threads = omp_get_max_threads();*//*
     int num_points = 1000;
     long num_itr = 1000000000;
 
-    /*int array[100];*/
+    *//*int array[100];*//*
 
     time_t t;
     srand((unsigned)time(&t));
@@ -116,7 +147,7 @@ int main() {
             result += sqrt(rand() % num_points);
         }
         printf("Hello world from thread %d result %lf iterations %ld\n", thread_id, result, num_itr);
-    }
+    }*/
 
     return 0;
 }
