@@ -86,6 +86,9 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
         }
     }
 
+    double totalTime = 0.0;
+    double times[threadCount];
+
     int itr;
     int k;
     for (itr = 0; itr < iterations; ++itr){
@@ -111,13 +114,27 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
             }
         }
 
+
 #pragma omp parallel
         {
+            double t1, t2;
             const int threadIdx = omp_get_thread_num();
+            t1 = omp_get_wtime();
             matrixMultiply(threadPartialBofZ[threadIdx], preX, rowCountPerUnit, targetDimension, globalColCount, blockSize, threadPartialOutMM[threadIdx]);
-
+            t2 = omp_get_wtime() - t1;
+            times[threadIdx] += t2;
         }
+
+        double max = -1.0;
+        for (i = 0; i < threadCount; ++i){
+            if (times[i] > max){
+                max = times[i];
+            }
+        }
+        totalTime += max;
     }
+
+    printf("Size %d x %d Total time (s) for %d iterations %lf", rowCountPerUnit, globalColCount, iterations, totalTime);
 }
 
 
@@ -126,28 +143,25 @@ int main() {
     const int total_threads = omp_get_max_threads();
     printf("There are %d available threads.\n", total_threads); fflush(stdout);
 
-    bcReplica(total_threads, 100, 50000, 100);
+    omp_set_num_threads(1);
+    int num_t = omp_get_num_threads();
+    if (num_t != 1){
+        printf("Error");
+        return -1;
+    }
 
-    /*int num_threads = omp_get_max_threads();*//*
-    int num_points = 1000;
-    long num_itr = 1000000000;
+    bcReplica(num_t, 100, 200000, 174);
 
-    *//*int array[100];*//*
 
-    time_t t;
-    srand((unsigned)time(&t));
-    //parallelize this part
-    #pragma omp parallel
-    {
-        double result =0.0;
-        const int thread_id = omp_get_thread_num();
+    omp_set_num_threads(24);
+    num_t = omp_get_num_threads();
+    if (num_t != 24){
+        printf("Error");
+        return -1;
+    }
 
-        long i;
-        for (i = 0; i < num_itr; ++i) {
-            result += sqrt(rand() % num_points);
-        }
-        printf("Hello world from thread %d result %lf iterations %ld\n", thread_id, result, num_itr);
-    }*/
+    bcReplica(num_t, 100, 200000, 4176);
+
 
     return 0;
 }
