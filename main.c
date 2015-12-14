@@ -170,7 +170,7 @@ int main(int argc, char **args) {
         exit(1);
     }
     const int total_threads = omp_get_max_threads();
-    printf("There are %d total available threads.\n", total_threads); fflush(stdout);
+    //printf("There are %d total available threads.\n", total_threads); fflush(stdout);
 
     /* Take these as command line args
      * 1. num threads -- t
