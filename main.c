@@ -141,27 +141,22 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
 int main() {
     printf("Hello World");
     const int total_threads = omp_get_max_threads();
-    printf("There are %d available threads.\n", total_threads); fflush(stdout);
+    printf("There are %d total available threads.\n", total_threads); fflush(stdout);
 
-    omp_set_num_threads(1);
+    /* Take these as command line args
+     * 1. num threads -- t
+     * 2. iterations -- i
+     * 3. rowcount -- r
+     * 4. colcount  -- c*/
+
+    omp_set_num_threads(t);
     int num_t = omp_get_num_threads();
-    if (num_t != 1){
-        printf("Error");
+    if (num_t != t){
+        printf("Error num_t %d expected %d", num_t, t);
         return -1;
     }
 
-    bcReplica(num_t, 100, 200000, 174);
-
-
-    omp_set_num_threads(24);
-    num_t = omp_get_num_threads();
-    if (num_t != 24){
-        printf("Error");
-        return -1;
-    }
-
-    bcReplica(num_t, 100, 200000, 4176);
-
+    bcReplica(num_t, i, c, r);
 
     return 0;
 }
