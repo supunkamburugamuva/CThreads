@@ -5,7 +5,7 @@ import subprocess
 def exec_main():
     iter = [100]
     rows = [87, 174, 348, 696, 1392, 2088]
-    cols = [200000, 100000, 400000]
+    cols = [2000, 1000, 4000]
     threads = [1, 2, 4, 8, 16, 24]
 
     for i in iter:

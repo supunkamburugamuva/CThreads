@@ -160,7 +160,7 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
         totalTime += max;
     }
 
-    printf("%d,%d,%d,%lf\n", rowCountPerUnit, globalColCount, iterations, totalTime);
+    printf("%d,%d,%d,%d%lf\n", rowCountPerUnit, globalColCount, iterations, threadCount, totalTime);
 }
 
 
