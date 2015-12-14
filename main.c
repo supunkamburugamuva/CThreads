@@ -141,14 +141,13 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
             int num_t = omp_get_num_threads();
             if (num_t != threadCount){
                 printf("Error num_t %d expected %d", num_t, threadCount);
-                return ;
             }
 
             double t1, t2;
             const int threadIdx = omp_get_thread_num();
-            t1 = omp_get_wtime();
+            t1 = elapsedtime();
             matrixMultiply(threadPartialBofZ[threadIdx], preX, rowCountPerUnit, targetDimension, globalColCount, blockSize, threadPartialOutMM[threadIdx]);
-            t2 = omp_get_wtime() - t1;
+            t2 = elapsedtime() - t1;
             times[threadIdx] += t2;
         }
 
@@ -161,7 +160,7 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
         totalTime += max;
     }
 
-    printf("Size %d x %d Total time (s) for %d iterations %lf", rowCountPerUnit, globalColCount, iterations, totalTime);
+    printf("%d,%d,%d,%lf\n", rowCountPerUnit, globalColCount, iterations, totalTime);
 }
 
 
@@ -191,7 +190,7 @@ int main(int argc, char **args) {
     omp_set_num_threads(t);
 
 
-    bcReplica(num_t, i, c, r);
+    bcReplica(t, i, c, r);
 
     return 0;
 }
