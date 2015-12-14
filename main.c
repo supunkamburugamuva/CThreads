@@ -10,6 +10,27 @@ double*** threadPartialOutMM;
 int targetDimension = 3;
 int blockSize = 64;
 
+#include <sys/time.h>
+
+double elapsedtime() {
+    struct timeval t;
+    struct timezone whocares;
+    double total;
+    double sec, msec;     /* seconds */
+    double usec;          /* microseconds */
+
+    // gettimeofday(&t, NULL);
+    gettimeofday(&t, &whocares);
+
+    msec = (double) (t.tv_sec);
+    usec = 1.0e-6*(double) (t.tv_usec);
+    total = msec + usec;
+    if (total < 0)
+        return(-17.0);
+    else
+        return(total);
+}
+
 void matrixMultiply(double** A, double** B, int aHeight, int bWidth, int comm, int bz, double** C) {
 
     int aHeightBlocks = aHeight / bz; // size = Height of A
@@ -117,6 +138,12 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
 
 #pragma omp parallel
         {
+            int num_t = omp_get_num_threads();
+            if (num_t != threadCount){
+                printf("Error num_t %d expected %d", num_t, threadCount);
+                return ;
+            }
+
             double t1, t2;
             const int threadIdx = omp_get_thread_num();
             t1 = omp_get_wtime();
@@ -138,8 +165,11 @@ void bcReplica(int threadCount, int iterations, int globalColCount, int rowCount
 }
 
 
-int main() {
-    printf("Hello World");
+int main(int argc, char **args) {
+    if (argc < 5) {
+        printf("We need 4 arguments");
+        exit(1);
+    }
     const int total_threads = omp_get_max_threads();
     printf("There are %d total available threads.\n", total_threads); fflush(stdout);
 
@@ -148,13 +178,18 @@ int main() {
      * 2. iterations -- i
      * 3. rowcount -- r
      * 4. colcount  -- c*/
+    int t = 0;
+    int i = 0;
+    int c = 0;
+    int r = 0;
+
+    t = atoi(args[1]);
+    i = atoi(args[2]);
+    r = atoi(args[3]);
+    c = atoi(args[4]);
 
     omp_set_num_threads(t);
-    int num_t = omp_get_num_threads();
-    if (num_t != t){
-        printf("Error num_t %d expected %d", num_t, t);
-        return -1;
-    }
+
 
     bcReplica(num_t, i, c, r);
 
