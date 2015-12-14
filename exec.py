@@ -12,7 +12,7 @@ def exec_main():
         for r in rows:
             for c in cols:
                 for t in threads:
-                    p = subprocess.Popen(['./a.out', str(t), str(i), str(r * c / 100000), str(c)], stdout=subprocess.PIPE);
+                    p = subprocess.Popen(['./a.out', str(t), str(i), str(r * c / 1000), str(c)], stdout=subprocess.PIPE);
                     out, err = p.communicate()
                     print out + "\n"
 

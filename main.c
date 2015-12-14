@@ -22,8 +22,8 @@ double elapsedtime() {
     // gettimeofday(&t, NULL);
     gettimeofday(&t, &whocares);
 
-    msec = (double) (t.tv_sec);
-    usec = 1.0e-6*(double) (t.tv_usec);
+    msec = (double) (t.tv_sec*1000);
+    usec = 1.0e-3*(double) (t.tv_usec);
     total = msec + usec;
     if (total < 0)
         return(-17.0);
